@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Primitives;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var requestCookies = new Mock<IReadableStringCollection>();
             requestCookies
-                .Setup(o => o.Get(It.IsAny<string>()))
+                .Setup(o => o[It.IsAny<string>()])
                 .Returns(string.Empty);
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var requestCookies = new Mock<IReadableStringCollection>();
             requestCookies
-                .Setup(o => o.Get(It.IsAny<string>()))
+                .Setup(o => o[It.IsAny<string>()])
                 .Returns(string.Empty);
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext
@@ -165,8 +166,8 @@ namespace Microsoft.AspNet.Antiforgery
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>());
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>());
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>());
 
             var options = new AntiforgeryOptions()
             {
@@ -195,9 +196,9 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Will not be accessed
             httpContext.Request.Form = null;
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
             {
-                { "cookie-name", new string[] { "cookie-value" } },
+                { "cookie-name", "cookie-value" },
             });
 
             var options = new AntiforgeryOptions()
@@ -224,10 +225,10 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>());
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
             {
-                { "cookie-name", new string[] { "cookie-value" } },
+                { "cookie-name", "cookie-value" },
             });
 
             var options = new AntiforgeryOptions()
@@ -254,13 +255,13 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>()
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>()
             {
-                { "form-field-name", new string[] { "form-value" } },
+                { "form-field-name", "form-value" },
             });
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
             {
-                { "cookie-name", new string[] { "cookie-value" } },
+                { "cookie-name", "cookie-value" },
             });
 
             var options = new AntiforgeryOptions()
@@ -419,22 +420,17 @@ namespace Microsoft.AspNet.Antiforgery
                 return this[key];
             }
 
-            public IList<string> GetValues(string key)
-            {
-                throw new NotImplementedException();
-            }
-
             public bool ContainsKey(string key)
             {
                 return _dictionary.ContainsKey(key);
             }
 
-            public string this[string key]
+            public StringValues this[string key]
             {
                 get { return _dictionary[key]; }
             }
 
-            public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+            public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
             {
                 throw new NotImplementedException();
             }
